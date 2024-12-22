@@ -63,5 +63,11 @@ namespace Meytha_ProfesTest.Controllers
             return salesOrders;
         }
 
+        public IActionResult AddEdit(int? id)
+        {
+            return View();
+
+        }
+
     }
 }
