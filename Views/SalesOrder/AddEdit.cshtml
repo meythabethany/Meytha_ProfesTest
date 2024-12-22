@@ -99,9 +99,8 @@
             <table class="table" id="orderDetailsTable">
                 <thead>
                     <tr>
-                        <th style="display: none;">ProductID</th>
                         <th>Product</th>
-                        <th>Quantity</th>
+                        <th>Qty</th>
                         <th>Price</th>
                         <th>Total</th>
                         <th>Action</th>
@@ -110,13 +109,15 @@
                 <tbody>
                     <tr>
                         <td><input type="text" id="product1" class="form-control" placeholder="Please Fill Item" required/></td>
-                        <td><input type="number" id="quantity1" class="form-control" placeholder="Please Fill Qty" onchange="updateTotal(1)" required /></td>
+                        <td><input type="number" id="qty1" class="form-control" placeholder="Please Fill" onchange="updateTotal(1)" required /></td>
                         <td><input type="number" id="price1" class="form-control" placeholder="Please Fill Price" onchange="updateTotal(1)" required  /></td>
                         <td><input type="number" id="total1" class="form-control" readonly/></td>
                         <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
                     </tr>
                 </tbody>
             </table>
+
+            <input type="hidden" id="orderDetailsJson" name="OrderDetailsJson" />
 
             <div class="d-flex justify-content-end">
                 <a href="/SalesOrder" class="btn btn-secondary me-2">Cancel</a>
@@ -128,7 +129,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function updateTotal(row) {
-            let quantity = document.getElementById('quantity' + row).value;
+            let quantity = document.getElementById('qty' + row).value;
             let price = document.getElementById('price' + row).value;
             let total = quantity * price;
             document.getElementById('total' + row).value = total;
@@ -190,6 +191,7 @@
                     alert("Mohon Isi Produk terlebih Dahulu");
                     return; 
                 }
+
             }
 
             let newRowIndex = rows.length;
@@ -198,12 +200,26 @@
             let newRow = table.insertRow();
             newRow.innerHTML = `
                     <td><input type="text" id="product${newRowIndex}" class="form-control" placeholder="Please Fill Item" required /></td>
-                    <td><input type="number" id="quantity${newRowIndex}" class="form-control" placeholder="Please Fill Qty" onchange="updateTotal(${newRowIndex})" required/></td>
+                    <td><input type="number" id="qtyy{newRowIndex}" class="form-control" placeholder="Please Fill Qty" onchange="updateTotal(${newRowIndex})" required/></td>
                     <td><input type="number" id="price${newRowIndex}" class="form-control" placeholder="Please Fill Price" onchange="updateTotal(${newRowIndex})" required /></td>
                     <td><input type="number" id="total${newRowIndex}" class="form-control" readonly /></td>
                     <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
                 `;
         }
+
+        document.querySelector("form").addEventListener("submit", function () {
+            const rows = document.querySelectorAll("#orderDetailsTable tbody tr");
+            const orderDetails = Array.from(rows).map(row => ({
+                Product: row.querySelector('input[id^="product"]').value,
+                Qtys: row.querySelector('input[id^="qty"]').value,
+                Qtyss: row.querySelector('input[id^="qty"]').value,
+                Price: row.querySelector('input[id^="price"]').value,
+                
+                Total: row.querySelector('input[id^="total"]').value
+            }));
+
+            document.getElementById("orderDetailsJson").value = JSON.stringify(orderDetails);
+        });
 
     </script>
 </body>

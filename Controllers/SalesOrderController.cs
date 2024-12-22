@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
 
 namespace Meytha_ProfesTest.Controllers
 {
@@ -96,6 +97,76 @@ namespace Meytha_ProfesTest.Controllers
             }
 
             return customers;
+        }
+
+        [HttpPost]
+        public IActionResult Save(SalesOrderheader salesOrder, string OrderDetailsJson)
+        {
+            //System.Diagnostics.Debug.WriteLine($"Sales Order Number: {salesOrder.SalesOrderNumber}");
+            //System.Diagnostics.Debug.WriteLine($"Order Date: {salesOrder.OrderDate}");
+            //System.Diagnostics.Debug.WriteLine($"Customer: {salesOrder.Customer}");
+            //System.Diagnostics.Debug.WriteLine($"Address: {salesOrder.Address}");
+            //var orderDetailss = JsonConvert.DeserializeObject<List<SalesOrderDetail>>(OrderDetailsJson);
+
+            //foreach (var detail in orderDetailss)
+            //{
+            //    System.Diagnostics.Debug.WriteLine($"ProductID: {detail.Product}, Quantity: {detail.Qty}, Price: {detail.Price}, Total: {detail.Total}");
+            //}
+
+            try
+            {
+                var orderDetails = JsonConvert.DeserializeObject<List<SalesOrderDetail>>(OrderDetailsJson);
+
+                SaveSalesOrder(salesOrder, orderDetails);
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "An error occurred: " + ex.Message);
+            }
+
+            ViewBag.Customers = GetCustomers();
+            return View("AddEdit", salesOrder);
+        }
+
+        private void SaveSalesOrder(SalesOrderheader salesOrder, List<SalesOrderDetail> orderDetails)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                using (var command = new SqlCommand("usp_sales_order_saving", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@SalesOrderNumber", salesOrder.SalesOrderNumber);
+                    command.Parameters.AddWithValue("@OrderDate", salesOrder.OrderDate);
+                    command.Parameters.AddWithValue("@CustomerID", salesOrder.Customer);
+                    command.Parameters.AddWithValue("@Address", salesOrder.Address);
+
+                    var orderDetailsTable = new DataTable();
+                    orderDetailsTable.Columns.Add("ProductName", typeof(string));
+                    orderDetailsTable.Columns.Add("Qty", typeof(int));
+                    orderDetailsTable.Columns.Add("Price", typeof(decimal));
+                    orderDetailsTable.Columns.Add("Total", typeof(decimal));
+
+                    foreach (var detail in orderDetails)
+                    {
+                        orderDetailsTable.Rows.Add( detail.Product, detail.Qtys, detail.Price, detail.Total);
+                    }
+
+                    var orderDetailsParam = new SqlParameter("@OrderDetails", SqlDbType.Structured)
+                    {
+                        TypeName = "dbo.DetailItem",
+                        Value = orderDetailsTable
+                    };
+                    command.Parameters.Add(orderDetailsParam);
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
         }
 
     }
