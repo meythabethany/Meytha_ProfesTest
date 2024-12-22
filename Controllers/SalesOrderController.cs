@@ -65,8 +65,37 @@ namespace Meytha_ProfesTest.Controllers
 
         public IActionResult AddEdit(int? id)
         {
+            var customers = GetCustomers();
+            ViewBag.Customers = customers;
             return View();
 
+        }
+
+        private List<Customer> GetCustomers()
+        {
+            List<Customer> customers = new List<Customer>();
+
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                SqlCommand command = new SqlCommand("usp_customer_lists", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    customers.Add(new Customer
+                    {
+                        CustomerID = reader.GetInt32(0),
+                        CustomerName = reader.GetString(1)
+                    });
+                }
+            }
+
+            return customers;
         }
 
     }

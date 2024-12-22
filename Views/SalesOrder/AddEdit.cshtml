@@ -1,4 +1,5 @@
-﻿@{
+﻿@model Meytha_ProfesTest.Models.SalesOrderheader
+@{
     ViewData["Title"] = "Add New Sales Order";
     Layout = null;
 }
@@ -81,6 +82,11 @@
                 <label for="Customer" class="form-label">Customer</label>
                 <select class="form-select" id="customer" name="Customer" required>
                     <option value="" disabled selected>Select Customer</option>
+                    <option value="" disabled selected>Select Customer</option>
+                    @foreach (var customer in ViewBag.Customers)
+                    {
+                        <option value="@customer.CustomerID">@customer.CustomerName</option>
+                    }
                 </select>
             </div>
             <div class="mb-3">
