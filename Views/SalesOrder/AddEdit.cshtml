@@ -133,6 +133,72 @@
             row.remove();
         }
 
+        document.getElementById('orderDetailsTable').addEventListener('keydown', function (event) {
+            let activeElement = document.activeElement;
+
+            if (event.key === 'Enter' && activeElement && activeElement.id.startsWith('price')) {
+                
+                let confirmAddRow = confirm("Apakah Anda yakin ingin menambahkan baris baru?");
+                if (confirmAddRow) {
+                    addNewRow(); 
+                }
+            }
+
+            if (event.key === 'Enter' && activeElement && activeElement.id.startsWith('product')) {
+            let productName = activeElement.value;
+            
+            if (checkDuplicateProduct(productName)) {
+                alert("Produk sudah dipilih, Mohon pilih produk lain");
+                event.preventDefault(); 
+                return;
+            }
+
+            let confirmAddRow = confirm("Apakah Anda yakin ingin menambahkan baris baru?");
+            if (confirmAddRow) {
+                addNewRow(); 
+            }
+            }
+
+        });
+
+        function checkDuplicateProduct(productName) {
+            let rows = document.getElementById('orderDetailsTable').getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                let existingProduct = rows[i].querySelector('input[id^="product"]').value;
+                if (existingProduct === productName) {
+                    return true; 
+                }
+            }
+            return false; 
+        }
+
+        function addNewRow() {
+            let table = document.getElementById('orderDetailsTable');
+            let rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                let productInput = rows[i].querySelector('input[id^="product"]');
+
+                if (productInput && !productInput.value) {
+                    alert("Mohon Isi Produk terlebih Dahulu");
+                    return; 
+                }
+            }
+
+            let newRowIndex = rows.length;
+
+            
+            let newRow = table.insertRow();
+            newRow.innerHTML = `
+                    <td><input type="text" id="product${newRowIndex}" class="form-control" placeholder="Please Fill Item" required /></td>
+                    <td><input type="number" id="quantity${newRowIndex}" class="form-control" placeholder="Please Fill Qty" onchange="updateTotal(${newRowIndex})" required/></td>
+                    <td><input type="number" id="price${newRowIndex}" class="form-control" placeholder="Please Fill Price" onchange="updateTotal(${newRowIndex})" required /></td>
+                    <td><input type="number" id="total${newRowIndex}" class="form-control" readonly /></td>
+                    <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
+                `;
+        }
+
     </script>
 </body>
 </html>
