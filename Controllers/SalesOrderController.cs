@@ -68,7 +68,21 @@ namespace Meytha_ProfesTest.Controllers
         {
             var customers = GetCustomers();
             ViewBag.Customers = customers;
-            return View();
+            if (id == null)
+            {
+                return View();
+            }
+            else
+            {
+                var salesOrder = GetSalesOrderDetails(id.Value);
+
+                if (salesOrder == null)
+                {
+                    return NotFound();
+                }
+
+                return View(salesOrder);
+            }
 
         }
 
@@ -140,6 +154,7 @@ namespace Meytha_ProfesTest.Controllers
                 {
                     command.CommandType = CommandType.StoredProcedure;
 
+                    command.Parameters.AddWithValue("@id", salesOrder.SOID);
                     command.Parameters.AddWithValue("@SalesOrderNumber", salesOrder.SalesOrderNumber);
                     command.Parameters.AddWithValue("@OrderDate", salesOrder.OrderDate);
                     command.Parameters.AddWithValue("@CustomerID", salesOrder.Customer);
@@ -167,6 +182,75 @@ namespace Meytha_ProfesTest.Controllers
                     command.ExecuteNonQuery();
                 }
             }
+        }
+
+        private List<SalesOrderheader> GetSalesOrderDetails(int id)
+        {
+            var salesOrders = new List<SalesOrderheader>();
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            DataTable dt = new DataTable();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                using (SqlCommand command = new SqlCommand("usp_sales_order_select", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@id", id); 
+                    connection.Open();
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    adapter.Fill(dt);
+
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    var firstRow = dt.Rows[0];
+
+                    var salesOrderHeader = new SalesOrderheader
+                    {
+                        SOID = id,
+                        SalesOrderNumber = firstRow["SalesOrderNumber"].ToString(),
+                        OrderDate = Convert.ToDateTime(firstRow["OrderDate"]),
+                        Customer = Convert.ToInt32(firstRow["Customer"]),
+                        Address = firstRow["Address"].ToString(),
+                        OrderDetails = new List<SalesOrderDetail>()
+                    };
+
+                    salesOrders.Add(salesOrderHeader);
+
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        var orderDetail = new SalesOrderDetail
+                        {
+                            Product = row["ProductName"].ToString(),
+                            Qty = Convert.ToInt32(row["Quantity"]),
+                            Qtys = Convert.ToInt32(row["Quantity"]),
+                            Price = Convert.ToDecimal(row["Price"]),
+                            Total = Convert.ToInt32(row["Quantity"]) * Convert.ToDecimal(row["Price"])
+                        };
+
+                        salesOrderHeader.OrderDetails.Add(orderDetail);
+                    }
+                }
+            }
+
+            return salesOrders;
+        }
+
+        public IActionResult Delete(int id)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                using (var command = new SqlCommand("usp_sales_order_delete", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@id", id);
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            return RedirectToAction("Index");
         }
 
     }

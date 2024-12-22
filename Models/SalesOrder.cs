@@ -10,6 +10,7 @@
 
     public class SalesOrderheader
     {
+        public int SOID { get; set; }
         public string SalesOrderNumber { get; set; }
         public DateTime OrderDate { get; set; }
         public int Customer { get; set; }

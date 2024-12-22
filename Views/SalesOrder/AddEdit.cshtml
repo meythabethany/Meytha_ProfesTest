@@ -1,4 +1,4 @@
-﻿@model Meytha_ProfesTest.Models.SalesOrderheader
+﻿@model IEnumerable<Meytha_ProfesTest.Models.SalesOrderheader>
 @{
     ViewData["Title"] = "Add New Sales Order";
     Layout = null;
@@ -70,59 +70,123 @@
     <div class="container mt-5">
         <h2 class="form-title">Add New Sales Order</h2>
         <form method="post" asp-action="save">
-            <div class="mb-3">
-                <label for="SalesOrderNumber" class="form-label">Sales Order Number</label>
-                <input type="text" class="form-control" id="salesOrderNumber" name="SalesOrderNumber" placeholder="Please Fill SO Number" />
-            </div>
-            <div class="mb-3">
-                <label for="OrderDate" class="form-label">Order Date</label>
-                <input type="date" class="form-control" id="orderDate" name="OrderDate" required />
-            </div>
-            <div class="mb-3">
-                <label for="Customer" class="form-label">Customer</label>
-                <select class="form-select" id="customer" name="Customer" required>
-                    <option value="" disabled selected>Select Customer</option>
-                    <option value="" disabled selected>Select Customer</option>
-                    @foreach (var customer in ViewBag.Customers)
-                    {
-                        <option value="@customer.CustomerID">@customer.CustomerName</option>
-                    }
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="Address" class="form-label">Address</label>
-                <input type="text" class="form-control" id="Address" name="Address" placeholder="Please Fill Address" required />
-            </div>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var order in Model)
+            {
+                <div class="mb-3">
+                        <input type="hidden" class="form-control" id="SOID" name="SOID" value="@order.SOID"/>
+                    <label for="SalesOrderNumber" class="form-label">Sales Order Number</label>
+                        <input type="text" class="form-control" id="salesOrderNumber" name="SalesOrderNumber" value="@order.SalesOrderNumber" placeholder="Please Fill SO Number" />
+                </div>
+                <div class="mb-3">
+                    <label for="OrderDate" class="form-label">Order Date</label>
+                        <input type="date" class="form-control" id="orderDate" name="OrderDate" value="@order.OrderDate.ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="mb-3">
+                    <label for="Customer" class="form-label">Customer</label>
+                    <select class="form-select" id="customer" name="Customer" required>
+                        <option value="" disabled selected>Select Customer</option>
+                        @foreach (var customer in ViewBag.Customers)
+                        {
+                                <option value="@customer.CustomerID" selected="@order.Customer">@customer.CustomerName</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="Address" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="Address" name="Address" value="@order.Address" placeholder="Please Fill Address" required />
+                </div>
 
-            <!-- Tabel Input Orderan -->
-            <h4>Order Details</h4>
-            <table class="table" id="orderDetailsTable">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><input type="text" id="product1" class="form-control" placeholder="Please Fill Item" required/></td>
-                        <td><input type="number" id="qty1" class="form-control" placeholder="Please Fill" onchange="updateTotal(1)" required /></td>
-                        <td><input type="number" id="price1" class="form-control" placeholder="Please Fill Price" onchange="updateTotal(1)" required  /></td>
-                        <td><input type="number" id="total1" class="form-control" readonly/></td>
-                        <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
-                    </tr>
-                </tbody>
-            </table>
+                <!-- Tabel Input Orderan -->
+                <h4>Order Details</h4>
+                <table class="table" id="orderDetailsTable">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in order.OrderDetails)
+                        {
+                            <tr>
+                                <td><input type="text" id="product1" class="form-control" placeholder="Please Fill Item" value="@item.Product" required/></td>
+                                    <td><input type="number" id="qty1" class="form-control" placeholder="Please Fill" value="@item.Qty" onchange="updateTotal(1)" required /></td>
+                                    <td><input type="number" id="price1" class="form-control" placeholder="Please Fill Price" value="@item.Price" onchange="updateTotal(1)" required /></td>
+                                    <td><input type="number" id="total1" class="form-control" value="@item.Total" readonly /></td>
+                                <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
 
-            <input type="hidden" id="orderDetailsJson" name="OrderDetailsJson" />
+                <input type="hidden" id="orderDetailsJson" name="OrderDetailsJson" />
 
-            <div class="d-flex justify-content-end">
-                <a href="/SalesOrder" class="btn btn-secondary me-2">Cancel</a>
-                <button type="submit" class="btn btn-primary" formmethod="post">Save</button>
-            </div>
+                <div class="d-flex justify-content-end">
+                    <a href="/SalesOrder" class="btn btn-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary" formmethod="post">Save</button>
+                </div>
+                }
+            }else
+            {
+                <div class="mb-3">
+                    <input type="hidden" class="form-control" id="SOID" name="SOID" value=0 />
+                    <label for="SalesOrderNumber" class="form-label">Sales Order Number</label>
+                    <input type="text" class="form-control" id="salesOrderNumber" name="SalesOrderNumber" placeholder="Please Fill SO Number" />
+                </div>
+                <div class="mb-3">
+                    <label for="OrderDate" class="form-label">Order Date</label>
+                    <input type="date" class="form-control" id="orderDate" name="OrderDate" required />
+                </div>
+                <div class="mb-3">
+                    <label for="Customer" class="form-label">Customer</label>
+                    <select class="form-select" id="customer" name="Customer" required>
+                        <option value="" disabled selected>Select Customer</option>
+                        @foreach (var customer in ViewBag.Customers)
+                        {
+                            <option value="@customer.CustomerID">@customer.CustomerName</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="Address" class="form-label">Address</label>
+                    <input type="text" class="form-control" id="Address" name="Address" placeholder="Please Fill Address" required />
+                </div>
+
+                <!-- Tabel Input Orderan -->
+                <h4>Order Details</h4>
+                <table class="table" id="orderDetailsTable">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" id="product1" class="form-control" placeholder="Please Fill Item" required /></td>
+                            <td><input type="number" id="qty1" class="form-control" placeholder="Please Fill" onchange="updateTotal(1)" required /></td>
+                            <td><input type="number" id="price1" class="form-control" placeholder="Please Fill Price" onchange="updateTotal(1)" required /></td>
+                            <td><input type="number" id="total1" class="form-control" value=0 readonly /></td>
+                            <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <input type="hidden" id="orderDetailsJson" name="OrderDetailsJson" />
+
+                <div class="d-flex justify-content-end">
+                    <a href="/SalesOrder" class="btn btn-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary" formmethod="post">Save</button>
+                </div>
+            }
         </form>
     </div>
 
@@ -187,6 +251,7 @@
             for (let i = 1; i < rows.length; i++) {
                 let productInput = rows[i].querySelector('input[id^="product"]');
 
+                updateTotal(i)
                 if (productInput && !productInput.value) {
                     alert("Mohon Isi Produk terlebih Dahulu");
                     return; 

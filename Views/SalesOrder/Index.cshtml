@@ -10,6 +10,9 @@
     <meta charset="utf-8" />
     <title>Sales Order</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -157,8 +160,10 @@
                     <tr>
                         <td>@item.Id</td>
                         <td class="action-icons">
-                            <a href="@Url.Action("Add", new { id = item.Id })"><i class="fas fa-edit"></i></a>
-                            <a href="@Url.Action("Delete", new { id = item.Id })"><i class="fas fa-trash"></i></a>
+                            <a href="@Url.Action("AddEdit", new { id = item.Id })"><i class="fas fa-edit"></i></a>
+                            <a href="javascript:void(0)" onclick="confirmDelete('@Url.Action("Delete", new { id = item.Id })')">
+                                <i class="fas fa-trash"></i>
+                            </a>
                         </td>
                         <td>@item.SalesOrderNumber</td>
                         <td>@item.OrderDate.ToShortDateString()</td>
@@ -168,5 +173,23 @@
             </tbody>
         </table>
     </div>
+    <script>
+        function confirmDelete(deleteUrl) {
+            Swal.fire({
+                title: 'Apakah Anda Yakin Untuk Menghapus Data Ini?',
+                text: "Data yang sudah dihapus tidak bisa dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya!',
+                cancelButtonText: 'Tidak'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = deleteUrl;
+                }
+            });
+        }
+    </script>
 </body>
 </html>
